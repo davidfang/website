@@ -103,7 +103,7 @@ class m140506_102106_rbac_init extends \yii\db\Migration
 ('管理员', '2', 1436868814);
 ";
         $this->execute($sql);
-        
+
     }
 
     public function down()
