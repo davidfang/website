@@ -73,13 +73,15 @@ class HomeController extends Controller
     {
         //缓存一个带有依赖的缓存
         $key = '_menu' . Yii::$app->user->id;
+
         if (Yii::$app->session->getFlash('reflush') || !Yii::$app->cache->get($key)) {
             //如果缓存依赖发生改变，重新生成缓存
             $dp = new ExpressionDependency([
                 'expression' => 'count(Yii::$app->authManager->getPermissionsByUser(Yii::$app->user->id))'
             ]);
+            $authManager = new \yii\rbac\DbManager();
             $dp2 = new DbDependency([
-                'sql' => 'select max(updated_at) from auth_item',
+                'sql' => "select max(updated_at) from ".$authManager->itemTable,//"{{%auth_item}}",
             ]);
             Yii::$app->cache->set($key, 'nothing', 0, new ChainedDependency([
                 'dependencies' => [$dp, $dp2]
