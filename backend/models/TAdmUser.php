@@ -22,7 +22,7 @@ class TAdmUser extends \yii\db\ActiveRecord implements IdentityInterface
      */
     public static function tableName()
     {
-        return '{{%t_adm_user}}';
+        return '{{%adm_user}}';
     }
 
     /**
