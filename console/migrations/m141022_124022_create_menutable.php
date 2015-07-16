@@ -27,7 +27,9 @@ class m141022_124022_create_menutable extends Migration
 (2, '菜单管理', 1, 'sys/menu', 'icon-book', 3),
 (3, '用户管理', 1, 'user/index', 'icon-book', 3),
 (4, '权限管理', 1, 'rbac', 'icon-book', 2),
-(5, '角色管理', 4, 'rbac/roles', 'icon-book', 3);";
+(5, '角色管理', 4, 'rbac/roles', 'icon-book', 3),
+(6, '用户', 0, 'user/add', 'icon-book', 1),
+(7, '资源管理', 4, 'rbac/permissions', 'icon-book', 3);";
         $this->execute($sql);
     }
 
