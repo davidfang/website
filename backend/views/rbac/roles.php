@@ -44,10 +44,16 @@ $this->params['breadcrumbs'] = [
         [
             'class'    => 'yii\grid\ActionColumn',
             'header'   => '操作',
-            'template' => '{view} {update} {delete}',
+            'template' => '{menu} {permission} {view} {update} {delete}',
             'buttons'  => [
+                'menu'   => function ($url, $model, $key) {
+                    return MyHelper::actionbutton(['rbac/assignrolemenu', 'rolename' => $key], 'view', ['title' => '角色分配菜单']);
+                },
+                'permission'   => function ($url, $model, $key) {
+                    return MyHelper::actionbutton(['rbac/assignpermission', 'permission' => $key], 'view', ['title' => '分配权限资源']);
+                },
                 'view'   => function ($url, $model, $key) {
-                    return MyHelper::actionbutton(['rbac/assignauth', 'rolename' => $key], 'view', ['title' => '分配权限']);
+                    return MyHelper::actionbutton(['rbac/assignauth', 'rolename' => $key], 'view', ['title' => '角色分配角色']);
                 },
                 'update' => function ($url, $model, $key) {
                     return MyHelper::actionbutton('update?id=' . $key, 'update');

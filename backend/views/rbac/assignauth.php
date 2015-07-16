@@ -15,7 +15,7 @@ $this->params['breadcrumbs'] = [
         'label'=>'角色管理',
         'url'=>'/rbac/roles',
     ],
-    '角色授权'
+    '角色分配角色'
 ];
 ?>
 
@@ -30,78 +30,84 @@ $this->params['breadcrumbs'] = [
     <table id="sample-table-1" class="table table-striped table-bordered table-hover">
         <thead>
         <tr>
-            <th class="hidden-320">一级菜单</th>
-            <th>二三级菜单</th>
+            <th class="hidden-320">一级权限资源</th>
+            <th>二三级权限资源</th>
         </tr>
         </thead>
         <tbody>
         <?php
-        foreach ($list as $f): ?>
+        foreach ($roles_tree as $f){ ?>
             <tr>
                 <td style="width: 150px;">
-                    <input type="checkbox" <?php if ($auth->hasChild($role,$auth->getPermission($f->route))): ?> checked <?php endif; ?>
-                           onclick="ckbox(1,this)" name="<?= $f['id'] ?>" id="<?= $f['id'] ?>"/>
-                    &nbsp;<?= $f['menuname'] ?></td>
+                    <input type="checkbox" <?php if ($auth->hasChild($role,$auth->getRole($f['name']))): ?> checked <?php endif; ?>
+                        <?php if ($role->name==$f['name']): ?> disabled <?php endif; ?>
+                           onclick="ckbox(1,this)" name="<?= $f['_name'] ?>" id="<?= $f['name'] ?>" />
+                    &nbsp;<?= $f['description'] ?></td>
                 <td>
-                    <?php foreach ($f->getSon()->all() as $son): ?>
-                        <div class="col-xs-12 col-sm-12 widget-container-span ui-sortable">
-                            <?php if($son->level==3): ?>
-                                <div class="widget-body">
-                                    <div class="widget-body-inner" style="display: block;">
-                                        <div class="widget-main">
-                                            <input type="checkbox"
-                                                   name="<?= $f['id'] . '_' . $son['id'] ?>"
-                                                   id="<?= $son['id'] ?>"
-                                                <?php if ($auth->hasChild($role,$auth->getPermission($son->route))): ?>
-                                                    checked
-                                                <?php endif; ?>
-                                                   onclick="ckbox(2,this)"/>
-                                            <?= $son['menuname'] ?>
-                                        </div>
-                                    </div>
-                                </div>
-                            <?php else: ?>
-                            <div class="widget-box collapsed">
-                                <div class="widget-header widget-header-small">
-                                    <h6>
-                                        <input type="checkbox"
-                                               name="<?= $f['id'] . '_' . $son['id'] ?>"
-                                               id="<?= $son['id'] ?>"
-                                            <?php if ($auth->hasChild($role,$auth->getPermission($son->route))): ?>
-                                                checked
-                                            <?php endif; ?>
-                                               onclick="ckbox(2,this)"/>
-                                        <?= $son['menuname'] ?>
-                                    </h6>
-                                    <div class="widget-toolbar">
-                                        <a href="#" data-action="collapse">
-                                            <i class="icon-chevron-down"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="widget-body">
-                                    <div class="widget-body-inner" style="display: block;">
-                                        <div class="widget-main">
-                                            <?php foreach ($son->getSon()->all() as $gson): ?>
+                    <?php if(!empty($f['children'])){ ?>
+                        <?php foreach ($f['children'] as $son){ ?>
+                            <div class="col-xs-12 col-sm-12 widget-container-span ui-sortable">
+                                <?php if(empty($son['children'])){ ?>
+                                    <div class="widget-body">
+                                        <div class="widget-body-inner" style="display: block;">
+                                            <div class="widget-main">
                                                 <input type="checkbox"
-                                                       name="<?= $f['id'] . '_' . $son['id'] . '_' . $gson['id'] ?>"
-                                                       id="<?= $gson['id'] ?>"
-                                                    <?php if ($auth->hasChild($role,$auth->getPermission($gson->route))): ?>
+                                                       name="<?=  $f['_name'] . '_' .$son['_name'] ?>"
+                                                       id="<?= $son['name'] ?>"
+                                                    <?php if ($auth->hasChild($role,$auth->getRole($son['name']))): ?>
                                                         checked
                                                     <?php endif; ?>
-                                                       onclick="ckbox(3,this)"/>&nbsp;
-                                                <?= $gson['menuname'] ?>
-                                            <?php endforeach; ?>
+                                                    <?php if ($role->name==$son['name']): ?> disabled <?php endif; ?>
+                                                       onclick="ckbox(2,this)"/>
+                                                <?= $son['description'] ?>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                <?php }else{ ?>
+                                    <div class="widget-box collapsed">
+                                        <div class="widget-header widget-header-small">
+                                            <h6>
+                                                <input type="checkbox"
+                                                       name="<?= $f['_name'] . '_' .$son['_name'] ?>"
+                                                       id="<?= $son['name'] ?>"
+                                                    <?php if ($auth->hasChild($role,$auth->getRole($son['name']))): ?>
+                                                        checked
+                                                    <?php endif; ?>
+                                                    <?php if ($role->name==$son['name']): ?> disabled <?php endif; ?>
+                                                       onclick="ckbox(2,this)"/>
+                                                <?= $son['description'] ?>
+                                            </h6>
+                                            <div class="widget-toolbar">
+                                                <a href="#" data-action="collapse">
+                                                    <i class="icon-chevron-down"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="widget-body">
+                                            <div class="widget-body-inner" style="display: block;">
+                                                <div class="widget-main">
+                                                    <?php foreach ($son['children'] as $gson): ?>
+                                                        <input type="checkbox"
+                                                               name="<?= $f['_name'] . '_' .$son['_name'] .'_'.$gson['_name'] ?>"
+                                                               id="<?= $gson['name'] ?>"
+                                                            <?php if ($auth->hasChild($role,$auth->getRole($gson['name']))): ?>
+                                                                checked
+                                                            <?php endif; ?>
+                                                            <?php if ($role->name==$gson['name']): ?> disabled <?php endif; ?>
+                                                               onclick="ckbox(3,this)"/>&nbsp;
+                                                        <?= $gson['description'] ?>
+                                                    <?php endforeach; ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php } ?>
                             </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
+                        <?php } ?>
+                    <?php } ?>
                 </td>
             </tr>
-        <?php endforeach; ?>
+        <?php } ?>
         </tbody>
     </table>
 </div>
@@ -134,7 +140,7 @@ $this->params['breadcrumbs'] = [
             }
         }
         //更新数据
-        var data = 'level=' + level + '&menuid=' + id + '&cntlv3=' + cntlv3 + '&cntlv2=' + cntlv2 + '&ck=' + thischecked + '&rolename=' + '<?= $rolename ?>';
+        var data = 'level=' + level + '&child=' + id + '&cntlv3=' + cntlv3 + '&cntlv2=' + cntlv2 + '&ck=' + thischecked + '&father=' + '<?= $rolename ?>';
         $.post('<?= \yii\helpers\Url::toRoute(['/rbac/assignauth']) ?>',data);
 //        $.post('/rbac/assignauth',data);
     }

@@ -178,19 +178,17 @@ class RbacController extends BackendController
             return ActiveForm::validate($model);
         }
     }
-
     /**
-     * 给角色分配权限资源 或者
-     * 给权限资源加子资源
+     * 给角色分配菜单
      * @return string
      */
-    public function actionAssignauth()
+    public function actionAssignrolemenu()
     {
         if (Yii::$app->request->isPost) {
             $posts = Yii::$app->request->post();
             $auth = Yii::$app->authManager;
             $role = is_null($auth->getRole($posts['rolename']))?$auth->getPermission($posts['rolename']):$auth->getRole($posts['rolename']);
-            var_dump($role);exit;
+            //var_dump($role);exit;
             $thismenu = TMenu::findOne($posts['menuid']);
             $route = $thismenu->route;
             $permission = $auth->getPermission($route);
@@ -201,7 +199,7 @@ class RbacController extends BackendController
                     //var_dump($father->route);
                     $fpermission = $auth->getPermission($father->route);
                     //var_dump($fpermission);exit;
-                        $this->addChild($role, $fpermission);
+                    $this->addChild($role, $fpermission);
                     //1级菜单
                     $ffpermission = $auth->getPermission($father->father->route);
                     $this->addChild($role,$ffpermission );
@@ -279,9 +277,57 @@ class RbacController extends BackendController
             'role'     => Yii::$app->authManager->getRole($rolename),
             'model'    => $model,
         ]);exit;*/
-        return $this->render('assignauth', [
+        return $this->render('assignrolemenu', [
             'list'     => $list,
             'rolename' => $rolename,
+            'role'     => Yii::$app->authManager->getRole($rolename),
+            'model'    => $model,
+        ]);
+    }
+    /**
+     * 给角色分配权限资源 或者
+     * 给权限资源加子资源
+     * @return string
+     */
+    public function actionAssignauth()
+    {
+        if (Yii::$app->request->isPost) {
+            $posts = Yii::$app->request->post();
+            //var_dump($posts);exit;
+            $auth = Yii::$app->authManager;
+            $father = is_null($auth->getRole($posts['father']))?$auth->getPermission($posts['father']):$auth->getRole($posts['father']);
+            $child = is_null($auth->getRole($posts['child']))?$auth->getPermission($posts['child']):$auth->getRole($posts['child']);
+            //var_dump($role);exit;
+
+            if ($posts['ck'] == 'true') {
+                //自身加入权限
+                $auth->addChild($father, $child);
+            } else {
+                //删除自身
+                $auth->removeChild($father, $child);
+            }
+            return 'ok';
+        }
+        $roles_tree = $this->getRolesTree();;
+
+        $rolename = Yii::$app->request->get('rolename');
+        $model = AuthItem::findOne($rolename);
+        /*echo '<pre>';
+        var_dump([
+            'permissions_tree'     => $permissions_tree,
+            'rolename' => $rolename,
+            'role'     => Yii::$app->authManager->getRole($rolename),
+            'model'    => $model,
+        ]);exit;*/
+        return $this->render('assignauth', [
+            'roles_tree'     => $roles_tree,
+            'rolename' => $rolename,
+            'role'     => Yii::$app->authManager->getRole($rolename),
+            'model'    => $model,
+        ]);
+        return $this->render('assignpermission', [
+            'permissions_tree'     => $permissions_tree,
+            'permission' => $permission,
             'role'     => Yii::$app->authManager->getRole($rolename),
             'model'    => $model,
         ]);
@@ -330,7 +376,7 @@ class RbacController extends BackendController
     }
     public function actionTest(){
         $auth = Yii::$app->authManager;
-        $children = $auth->getChildren('管理员');
+        /*$children = $auth->getChildren('管理员');
         //var_dump($children);
         $conf = $auth->getPermission('conf');
         $rbac = $auth->getPermission('rbac');
@@ -349,7 +395,38 @@ class RbacController extends BackendController
         //var_dump($children);
 
         $permissions_tree = $this->getPermissionsTree();
-        var_dump($permissions_tree);
+        var_dump($permissions_tree);*/
+
+
+        /*$a = $auth->createRole('a');
+        $b = $auth->createRole('b');
+        $c = $auth->createRole('c');
+        $d = $auth->createRole('d');
+        $e = $auth->createRole('e');
+        $f = $auth->createRole('f');
+        $a->description = 'a';
+        $b->description = 'b';
+        $c->description = 'c';
+        $d->description = 'd';
+        $e->description = 'e';
+        $f->description = 'f';
+        $auth->add($a);
+        $auth->add($b);
+        $auth->add($c);
+        $auth->add($d);
+        $auth->add($e);
+        $auth->add($f);
+
+        $auth->addChild($a,$b);
+        $auth->addChild($b,$c);
+
+        $auth->addChild($d,$e);
+        $auth->addChild($e,$f);*/
+
+        $roles_tree = $this->getRolesTree();
+        var_dump($roles_tree);
+
+
         exit;
     }
     /**
@@ -392,6 +469,62 @@ class RbacController extends BackendController
                 $children = $children ;
             }else{
                 $children = $this->getPermissions($children);
+            }
+            $permission = [
+                'type'=>$v->type,
+                'name'=>$v->name,//str_replace('/','\/',$v->name),
+                '_name'=>str_replace('/','\/',$v->name),//用于树状搜索时便于jquery搜索
+                'description'=>$v->description,
+                'ruleName'=>$v->ruleName,
+                'data'=>$v->data,
+                'createdAt'=>$v->createdAt,
+                'updatedAt'=>$v->updatedAt,
+                'children'=>$children,
+            ];
+            $return[$k] = $permission;
+        }
+        return $return;
+    }
+    /**
+     * 获得角色树（树状资源）
+     *  @return array
+     */
+    public function getRolesTree()
+    {
+        $auth = Yii::$app->authManager;
+        $roles = $auth->getRoles();
+        $back = array();
+        $return = $roles_tree = $this->getRoles($roles);
+        foreach($roles_tree as $fk => $fv){//一级
+            if(!empty($fv['children'])){
+                foreach($fv['children'] as $ck => $cv){//二级
+                    unset($return[$ck]);//删除一级中多余的二级有的权限资源
+                    if(!empty($cf['children'])){
+                        foreach($cv['children'] as $gk => $gv){//三级
+                            unset($return[$gk]);//删除一级中多余的三级有的权限资源
+                        }
+                    }
+                }
+            }
+        }
+
+        return $return;
+    }
+    /**
+     * 获得所有角色（带child）
+     * @param $roles
+     * @return array
+     */
+    protected function getRoles($roles){
+        //$auth = Yii::$app->authManager;
+        //$permissions = $auth->getPermissions();
+        $return = array();// clone $permissions;
+        foreach ($roles as $k => $v) {
+            $children = Yii::$app->authManager->getChildren($k);
+            if(empty($children)){
+                $children = $children ;
+            }else{
+                $children = $this->getRoles($children);
             }
             $permission = [
                 'type'=>$v->type,
