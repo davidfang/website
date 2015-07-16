@@ -20,9 +20,9 @@ class m141101_015745_createtable_admin_user extends Migration
         ], $tableOptions);
         $pw1 = Security::generatePasswordHash('admin');
         $pw2 = Security::generatePasswordHash('demo');
-        $sql = "INSERT INTO `t_adm_user` (`id`, `username`, `password`) VALUES
-(1, 'admin', '$pw1'),
-(2, 'demo', '$pw2');";
+        $sql = "INSERT INTO `t_adm_user` (`id`, `username`, `password`,`userphoto`) VALUES
+(1, 'admin', '$pw1','default.jpg'),
+(2, 'demo', '$pw2','default.jpg');";
         $this->execute($sql);
     }
 
