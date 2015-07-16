@@ -2,7 +2,7 @@
 
 use yii\db\Schema;
 use yii\db\Migration;
-use yii\helpers\Security;
+use yii\base\Security;
 class m141101_015745_createtable_admin_user extends Migration
 {
     public function up()
@@ -18,9 +18,10 @@ class m141101_015745_createtable_admin_user extends Migration
             'password' => Schema::TYPE_STRING . '(64) NOT NULL',
             'userphoto' => Schema::TYPE_STRING . '(64)  NULL',
         ], $tableOptions);
-        $pw1 = Security::generatePasswordHash('admin');
-        $pw2 = Security::generatePasswordHash('demo');
-        $sql = "INSERT INTO `{{%t_adm_user}}` (`id`, `username`, `password`,`userphoto`) VALUES
+        $Security = new Security();
+        $pw1 = $Security->generatePasswordHash('admin');
+        $pw2 = $Security->generatePasswordHash('demo');
+        $sql = "INSERT INTO {{%t_adm_user}} (`id`, `username`, `password`,`userphoto`) VALUES
 (1, 'admin', '$pw1','default.jpg'),
 (2, 'demo', '$pw2','default.jpg');";
         $this->execute($sql);

@@ -22,7 +22,7 @@ class m141022_124022_create_menutable extends Migration
 
             'level' => Schema::TYPE_SMALLINT . ' NOT NULL DEFAULT 1',
         ], $tableOptions);
-        $sql = "INSERT INTO `t_menu` (`id`, `menuname`, `parentid`, `route`, `menuicon`, `level`) VALUES
+        $sql = "INSERT INTO {{%t_menu}} (`id`, `menuname`, `parentid`, `route`, `menuicon`, `level`) VALUES
 (1, '设置', 0, 'conf', 'icon-cog', 1),
 (2, '菜单管理', 1, 'sys/menu', 'icon-book', 3),
 (3, '用户管理', 1, 'user/index', 'icon-book', 3),
