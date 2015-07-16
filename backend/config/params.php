@@ -1,4 +1,4 @@
 <?php
 return [
-    'webname'=>'集团OA管理系统',
+    'webname'=>'公司集团OA管理系统',
 ];
