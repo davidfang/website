@@ -182,4 +182,66 @@ class MyHelper
             ], $options));
         }
     }
+    /**
+     * 获得角色权限资源（带child）
+     * @param $items
+     * @return array
+     */
+    public static function itemTree($items){
+        //$auth = Yii::$app->authManager;
+        //$permissions = $auth->getPermissions();
+        $return = array();// clone $permissions;//
+        $str='';
+        foreach ($items as $k => $v) {
+            //$str .= ''.$v->name .'-('.$v->type.')-'.'('.$v->description.')<br>';
+            $icon = ($v->type ==1)?'icon-user':'icon-eye-open';
+            $str .= '<li class="dd-item dd2-item" data-id="'.$v->name.'">
+													<div class="dd-handle dd2-handle">
+														<i class="normal-icon '.$icon.' red bigger-130"></i>
+
+														<i class="drag-icon icon-move bigger-125"></i>
+													</div>
+													<div class="dd2-content">'.$v->name.'('.$v->description.')
+													<div class="pull-right action-buttons">
+																	<a class="blue" href="#">
+																		<i class="icon-plus-sign bigger-130"></i>
+																	</a>
+																	<a class="blue" href="#">
+																		<i class="icon-pencil bigger-130"></i>
+																	</a>
+
+																	<a class="red" href="#">
+																		<i class="icon-trash bigger-130"></i>
+																	</a>
+																</div>
+													</div>';
+
+            $children = Yii::$app->authManager->getChildren($k);
+            if(empty($children)){
+                $children = $children ;
+                //$str .= '无子';
+            }else{
+                $children_array = self::itemTree($children);
+                $children = $children_array['return'];
+                //$str .= '='.$children_array['str'];
+                $str .= '<ol class="dd-list">';
+                $str .= $children_array['str'];
+                $str .= '</ol>';
+            }
+            $str .= '</li>';
+            $permission = [
+                'type'=>$v->type,
+                'name'=>$v->name,//str_replace('/','\/',$v->name),
+                '_name'=>str_replace('/','\/',$v->name),//用于树状搜索时便于jquery搜索
+                'description'=>$v->description,
+                'ruleName'=>$v->ruleName,
+                'data'=>$v->data,
+                'createdAt'=>$v->createdAt,
+                'updatedAt'=>$v->updatedAt,
+                'children'=>$children,
+            ];
+            $return[$k] = $permission;
+        }
+        return ['return'=>$return,'str'=>$str];
+    }
 }

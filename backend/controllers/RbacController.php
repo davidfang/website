@@ -23,6 +23,7 @@ namespace backend\controllers;
 use backend\models\AuthItem;
 use backend\models\TAdmUser;
 use backend\models\TMenu;
+use common\components\MyHelper;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\helpers\ArrayHelper;
@@ -423,11 +424,21 @@ class RbacController extends BackendController
         $auth->addChild($d,$e);
         $auth->addChild($e,$f);*/
 
-        $roles_tree = $this->getRolesTree();
-        var_dump($roles_tree);
+        //$roles_tree = $this->getRolesTree();
+        $roles = $auth->getRoles();
+        $roles_tree = MyHelper::itemTree($roles);
+        $permissions = $auth->getPermissions();
+        $permissions_tree = MyHelper::itemTree($permissions);
+        //echo '<pre>';
+        //print_r($roles_tree);
+        //echo $roles_tree['str'];
+        //print_r($permissions);
+        //\Yii::$app->response->format = 'json';
+        //return $roles_tree;
 
 
-        exit;
+        //exit;
+        return $this->render('test',['roles_tree'=>$roles_tree,'permissions_tree'=>$permissions_tree]);
     }
     /**
      * 获得资源树（树状资源）
