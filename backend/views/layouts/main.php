@@ -89,7 +89,7 @@ AppAsset::register($this);
 
                 <li class="light-blue">
                     <a data-toggle="dropdown" href="#" class="dropdown-toggle">
-                        <img class="nav-user-photo" src="/upload/user/<?= Yii::$app->user->identity->userphoto ?>" alt="Jason's Photo"/>
+                        <img class="nav-user-photo" src="/upload/user/<?= is_null(Yii::$app->user->identity->userphoto)?'default.jpg':Yii::$app->user->identity->userphoto ?>" alt="Jason's Photo"/>
                             <span class="user-info">
                                 <small>Welcome,</small>
                                 <?= Yii::$app->user->identity->username ?>

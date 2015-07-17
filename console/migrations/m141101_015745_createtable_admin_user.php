@@ -21,9 +21,9 @@ class m141101_015745_createtable_admin_user extends Migration
         $Security = new Security();
         $pw1 = $Security->generatePasswordHash('admin');
         $pw2 = $Security->generatePasswordHash('demo');
-        $sql = "INSERT INTO {{%adm_user}} (`id`, `username`, `password`,`userphoto`) VALUES
-(1, 'admin', '$pw1','default.jpg'),
-(2, 'demo', '$pw2','default.jpg');";
+        $sql = "INSERT INTO {{%adm_user}} (`id`, `username`, `password`) VALUES
+(1, 'admin', '$pw1'),
+(2, 'demo', '$pw2');";
         $this->execute($sql);
     }
 

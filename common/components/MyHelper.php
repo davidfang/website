@@ -150,7 +150,7 @@ class MyHelper
     /**
      * 生成操作按钮
      * @param $url
-     * @param string $type
+     * @param string $type  view|update|delete 或者要显示的图标CSS样式
      * @param array $options
      * @return string
      */
@@ -161,19 +161,24 @@ class MyHelper
                 'title'     => Yii::t('yii', 'View'),
                 'data-pjax' => '0',
             ], $options));
-        }
+        }else
         if ($type == 'update') {
             return Html::a('<span class="glyphicon glyphicon-pencil"></span>', $url, ArrayHelper::merge([
                 'title'     => Yii::t('yii', 'Update'),
                 'data-pjax' => '0',
             ], $options));
-        }
+        }else
         if ($type == 'delete') {
             return Html::a('<span class="glyphicon glyphicon-trash"></span>', $url, ArrayHelper::merge([
                 'title'        => Yii::t('yii', 'Delete'),
                 'data-confirm' => Yii::t('yii', 'Are you sure you want to delete this item?'),
                 'data-method'  => 'post',
                 'data-pjax'    => '0',
+            ], $options));
+        }else{
+            return Html::a("<span class='glyphicon $type'></span>", $url, ArrayHelper::merge([
+                'title'     => Yii::t('yii', 'Update'),
+                'data-pjax' => '0',
             ], $options));
         }
     }
