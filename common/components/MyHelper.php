@@ -184,10 +184,11 @@ class MyHelper
     }
     /**
      * 获得角色权限资源（带child）
-     * @param $items
+     * @param $items  角色权限资源数组
+     * @param $father 上一级的名字
      * @return array
      */
-    public static function itemTree($items){
+    public static function itemTree($items,$father=''){
         //$auth = Yii::$app->authManager;
         //$permissions = $auth->getPermissions();
         $return = array();// clone $permissions;//
@@ -195,6 +196,11 @@ class MyHelper
         foreach ($items as $k => $v) {
             //$str .= ''.$v->name .'-('.$v->type.')-'.'('.$v->description.')<br>';
             $icon = ($v->type ==1)?'icon-user':'icon-eye-open';
+            $add_html = MyHelper::actionbutton(['rbac/create', 'father' => $k], 'icon-plus-sign', ['title' => '添加下级']);
+            $remove_child_html = MyHelper::actionbutton(['rbac/remove-child','father' =>$father, 'child' => $k], 'icon-minus-sign', ['title' => '从此级删除此项']);
+            $del_html = MyHelper::actionbutton('rbac/delete?id=' . $k, 'delete');
+            $update_html = MyHelper::actionbutton('update?id=' . $k, 'update');
+
             $str .= '<li class="dd-item dd2-item" data-id="'.$v->name.'">
 													<div class="dd-handle dd2-handle">
 														<i class="normal-icon '.$icon.' red bigger-130"></i>
@@ -203,16 +209,7 @@ class MyHelper
 													</div>
 													<div class="dd2-content">'.$v->name.'('.$v->description.')
 													<div class="pull-right action-buttons">
-																	<a class="blue" href="#">
-																		<i class="icon-plus-sign bigger-130"></i>
-																	</a>
-																	<a class="blue" href="#">
-																		<i class="icon-pencil bigger-130"></i>
-																	</a>
-
-																	<a class="red" href="#">
-																		<i class="icon-trash bigger-130"></i>
-																	</a>
+																	'.$add_html.$remove_child_html.$update_html.$del_html.'
 																</div>
 													</div>';
 
@@ -221,7 +218,7 @@ class MyHelper
                 $children = $children ;
                 //$str .= '无子';
             }else{
-                $children_array = self::itemTree($children);
+                $children_array = self::itemTree($children,$v->name);
                 $children = $children_array['return'];
                 //$str .= '='.$children_array['str'];
                 $str .= '<ol class="dd-list">';

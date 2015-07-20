@@ -34,6 +34,137 @@ use yii\widgets\ActiveForm;
 class RbacController extends BackendController
 {
     /**
+     * 角色权限管理首页
+     */
+    public function actionIndex(){
+        $auth = Yii::$app->authManager;
+
+        $roles = $auth->getRoles();
+        $roles_tree = MyHelper::itemTree($roles);
+        $permissions = $auth->getPermissions();
+        $permissions_tree = MyHelper::itemTree($permissions);
+
+        return $this->render('test',['roles_tree'=>$roles_tree,'permissions_tree'=>$permissions_tree]);
+    }
+    /**
+     * 添加角色/权限资料
+     * @param string $father 上级名称
+     * @return string|Response
+     */
+    public function actionCreate($father='')
+    {
+        if($father !==''){
+            $father_info = AuthItem::findOne($father);
+        }else{
+            $father_info = null;
+        }
+        $model = new AuthItem;
+        if ($model->load(Yii::$app->request->post())) {
+
+            $posts = Yii::$app->request->post();
+            $auth = Yii::$app->authManager;
+            if($posts['type']==1) {
+                $role = $auth->createRole($model->name);
+                $role->description = $model->description;
+                $auth->add($role);
+                $child_item = $role;
+            }else{
+                $permission = $auth->createPermission($model->name);
+                $permission->description = $model->description;
+                $auth->add($permission);
+                $child_item = $permission;
+            }
+            if(!empty($father_info)){//有父级，将建立父子关系
+                $father_item = is_null($auth->getRole($father))?$auth->getPermission($father):$auth->getRole($father);
+                $auth->addChild($father_item,$child_item);
+            }
+
+
+            Yii::$app->session->setFlash('success');
+            return $this->redirect(['rbac/roles']);
+        } else {
+            return $this->render('create', [
+                'model' => $model,
+                'father_info' => $father_info
+            ]);
+        }
+    }
+
+    /**
+     * 编辑角色/权限资料
+     * @param $id
+     * @param string $father 上级名称
+     * @return string|Response
+     */
+    public function actionUpdate($id,$father='')
+    {
+        if($father !==''){
+            $father_info = AuthItem::findOne($father);
+        }else{
+            $father_info = null;
+        }
+        $model = AuthItem::findOne($id);
+        $request = Yii::$app->request;
+        $auth = Yii::$app->authManager;
+        if ($request->isPost && $model->load($request->post())) {
+            $name = $model->oldAttributes['name'];
+            $role = $auth->getRole($name);
+            $role->name = $model->name;
+            $role->description = $model->description;
+            if ($auth->update($name, $role)) {
+                Yii::$app->session->setFlash('success');
+                return $this->redirect(['rbac/roles']);
+            }
+        } else {
+            return $this->render('update', [
+                'model' => $model,
+                'father_info' => $father_info
+            ]);
+        }
+    }
+    /**
+     * 删除角色或权限资源
+     * @param $id
+     * @return Response
+     */
+    public function actionDelete($id)
+    {
+        $auth = Yii::$app->authManager;
+        $role = (is_null($auth->getRole($id)))?$auth->getPermission($id):$auth->getRole($id);
+        if ($auth->remove($role)) {
+            Yii::$app->session->setFlash('success');
+        } else {
+            Yii::$app->session->setFlash('fail', '角色删除失败');
+        }
+        return $this->redirect(['rbac/roles']);
+    }
+    /**
+     * 删除角色或权限资源的下级角色或资源
+     * @param $id
+     * @return Response
+     */
+    public function actionRemoveChild($father,$child)
+    {
+        $auth = Yii::$app->authManager;
+        $father_obj = (is_null($auth->getRole($father)))?$auth->getPermission($father):$auth->getRole($father);
+        $child_obj = (is_null($auth->getRole($child)))?$auth->getPermission($child):$auth->getRole($child);
+        if ($auth->hasChild($father_obj,$child_obj) and $auth->removeChild($father_obj,$child_obj)) {
+            Yii::$app->session->setFlash('success');
+        } else {
+            Yii::$app->session->setFlash('fail', '删除失败');
+        }
+        return $this->redirect(['rbac/roles']);
+    }
+
+
+
+
+
+
+
+
+
+    /**
      * 角色列表
      * @return string
      */
@@ -61,54 +192,7 @@ class RbacController extends BackendController
             'dataprovider' => $dataprovider,
         ]);
     }
-    /**
-     * 添加角色
-     * @return string|Response
-     */
-    public function actionCreate()
-    {
-        $model = new AuthItem;
-        if ($model->load(Yii::$app->request->post())) {
-            $posts = Yii::$app->request->post();
-            $auth = Yii::$app->authManager;
-            if($posts['type']==1) {
-                $role = $auth->createRole($model->name);
-                $role->description = $model->description;
-                $auth->add($role);
-            }else{
-                $permission = $auth->createPermission($model->name);
-                $permission->description = $model->description;
-                $auth->add($permission);
-            }
-            Yii::$app->session->setFlash('success');
-            return $this->redirect(['rbac/roles']);
-        } else {
-            return $this->render('create', [
-                'model' => $model,
-            ]);
-        }
-    }
 
-    public function actionUpdate($id)
-    {
-        $model = AuthItem::findOne($id);
-        $request = Yii::$app->request;
-        $auth = Yii::$app->authManager;
-        if ($request->isPost && $model->load($request->post())) {
-            $name = $model->oldAttributes['name'];
-            $role = $auth->getRole($name);
-            $role->name = $model->name;
-            $role->description = $model->description;
-            if ($auth->update($name, $role)) {
-                Yii::$app->session->setFlash('success');
-                return $this->redirect(['rbac/roles']);
-            }
-        } else {
-            return $this->render('update', [
-                'model' => $model,
-            ]);
-        }
-    }
 
     /**
      * 添加/修改角色
@@ -600,6 +684,12 @@ class RbacController extends BackendController
         ]);
     }
 
+
+
+
+
+
+    
     /**
      * 添加权限
      * @param $role
