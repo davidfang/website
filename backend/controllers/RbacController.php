@@ -155,6 +155,28 @@ class RbacController extends BackendController
         }
         return $this->redirect(['rbac/roles']);
     }
+    /**
+     * 添加角色或权限资源的下级角色或资源
+     * @param $id
+     * @return Response
+     */
+    public function actionAddChild($father,$child)
+    {
+        $return = ['status'=>false,'msg'=>'添加失败'];
+        $auth = Yii::$app->authManager;
+        $father_obj = (is_null($auth->getRole($father)))?$auth->getPermission($father):$auth->getRole($father);
+        $child_obj = (is_null($auth->getRole($child)))?$auth->getPermission($child):$auth->getRole($child);
+        if ($auth->hasChild($father_obj,$child_obj) and $auth->addChild($father_obj,$child_obj)) {
+            //Yii::$app->session->setFlash('success');
+            $return['status'] = true;
+            $return['msg'] = '添加成功';
+        } /*else {
+            Yii::$app->session->setFlash('fail', '删除失败');
+        }
+        return $this->redirect(['rbac/roles']);*/
+        Yii::$app->response->format = 'json';
+        return $return;
+    }
 
 
 
@@ -689,7 +711,7 @@ class RbacController extends BackendController
 
 
 
-    
+
     /**
      * 添加权限
      * @param $role
