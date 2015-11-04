@@ -22,11 +22,11 @@
 return [
     'db'=>[
         'class' => 'yii\db\Connection',
-        'dsn' => 'mysql:host=localhost;dbname=yii2_website',
+        'dsn' => 'mysql:host=localhost;dbname=xwjtoa',
         'username' => 'root',
         'password' => '123456',
         'charset' => 'utf8',
-        'tablePrefix'=>'xw_'
+        'tablePrefix'=>'oa_'
     ],
 ];
 ?>
